@@ -1,0 +1,7 @@
+const { JWT_SECRET, JWT_EXPIRES_IN, HASHING_ALGORITHM } = process.env;
+
+module.exports = {
+  JWT_SECRET,
+  JWT_EXPIRES_IN,
+  HASHING_ALGORITHM,
+};
