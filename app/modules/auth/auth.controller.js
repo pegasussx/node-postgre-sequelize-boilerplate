@@ -1,10 +1,9 @@
 /* eslint-disable consistent-return */
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const httpStatus = require('http-status');
 const APIError = require('../../helpers/APIError');
 const db = require('../../db/models');
-const config = require('../../config');
+const { generateTokens } = require('../token/token.controller');
 
 /**
  * Login
@@ -35,14 +34,17 @@ async function login(req, res, next) {
         city: user.city,
         state: user.state,
         phone: user.phone,
+        createdAt: user.createdAt,
       };
-      const token = generateJWT(userData);
+
+      const { accessToken, refreshToken } = await generateTokens(userData);
 
       return res.status(httpStatus.OK).json({
         success: true,
         message: 'Welcome',
         data: {
-          token,
+          accessToken,
+          refreshToken,
           user: userData,
         },
       });
@@ -105,29 +107,23 @@ async function register(req, res, next) {
       city: user.city,
       state: user.state,
       phone: user.phone,
+      createdAt: user.createdAt,
     };
-    const token = generateJWT(userData);
+
+    const { accessToken, refreshToken } = await generateTokens(userData);
 
     return res.status(httpStatus.OK).json({
       success: true,
       message: 'Registered Successfully',
-      token,
-      user: userData,
+      data: {
+        accessToken,
+        refreshToken,
+        user: userData,
+      },
     });
   } catch (error) {
     return next(error);
   }
-}
-
-/**
- * Generates JWT for the payload
- * @param {*} payload - Payload to be signed in JWT
- */
-function generateJWT(payload) {
-  return jwt.sign(payload, config.JWT_SECRET, {
-    expiresIn: config.JWT_EXPIRES_IN,
-    algorithm: config.HASHING_ALGORITHM,
-  });
 }
 
 module.exports = {
